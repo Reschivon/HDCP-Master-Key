@@ -1,0 +1,92 @@
+This source package does two things.
+
+a)  It contains code to perform the css authentication protocol,
+    allowing locked sectors on the DVD disc to be accessed.
+
+    This also allows us to read the disc key and title keys.
+
+b)  It contains an implementation of the css decryption algorithm,
+    so that we can watch DVD's.
+
+Also included are some test programs to wrarp around the above code
+blocks so that something usefule can be performed.
+
+The programs included are tstdvd,  reset,  dvdinfo and css-cat.
+
+tstdvd can be used to unlock the disc (saving the disk key) and
+to extract the title keys.  usage is:
+
+  reset /path/to/dvd/device
+
+    This will reset all AGIDs that the drive has given out.  This
+    can sometimes be useful when something goes wrong.
+
+  tstdvd /path/to/dvd/device
+
+    This will authenticate the device and save the disk key into
+    a file in the current directory called "disk-key".
+
+  (mount the dvd somewhere)
+
+  tstdvd /path/to/dvd/device /mount/path/video_ts/vts_01_1.vob
+
+    This will reauthenticate and then read the title key for
+    the chosen vob file,  saving it in a file in the current
+    directoy called "title-key".
+
+  Do the above title key extraction for each title on the disc,
+renaming the title-key files to title1-key,  title2-key etc.
+
+  dvdinfo /path/to/dvd/device
+
+    Displays some info from the physical and copyright pages.  This
+    includes the region limits on the disc,  its encryption status,
+    and the authentication status.
+
+  css-cat [-t title-no] [-m mpeg-audio-no ] [-vPpm12345678] vob_file
+
+    This will decrypt the selected vob file and send to stdout.  It
+needs the files "disk-key" and "titleX-key" to be in the current
+directory.  The default title-no is one,  so by default it will look
+for "title1-key".
+
+    The options select what will be sent to stdout.  By default,  nothing
+will.  The m option is not yet coded,  the v option selects video, the
+numbers select the appropriate AC3 stream.
+    It will normally extract the selected stream from the enclosing
+Program stream,  thus giving an elemental stream.  However if the K option
+(or more than one stream) is selected then the data will be left inside
+the PES packets,  allowing a subsequent demux program to determine the
+data type.
+
+    I tend to use:
+
+    cat /dvd/video_ts/vts_01_[1-9].vob|css-cat -v1P -|mpeg2player -vob -f -
+
+NOTE:  To use the above you need to have a kernel which incorporates the
+       DVD ioctls.  This can either be the original patch by Andrew Veliath
+       or Jens Axboe's patches.  If using Andrews versio of the patches,
+       you'll have to change the use of .key in the sources to .key1/.key2
+       (the places are quite easy to find).
+
+       Jens site is www.kernel.dk
+
+Changes:
+       Patches have been applied to use the OpenBSD headers,  so maybe it'll
+       work.
+
+       There a some more keys included.  It should now be able to decrypt
+       all titles currently on the market.  I think the last two keys can
+       be removed.  Someone with 'The Matrix' please test and get back to
+       me.
+
+       Mpeg audio streams should now be extractable when filtering,  this is
+       untested.
+
+       It now copes with System headers in the Pack layer (those 0x000001bb
+       start codes).
+
+       The command line options have changed between the last version and
+       this one - pay attention.
+
+DF     1999/11/05
